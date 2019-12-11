@@ -1,11 +1,4 @@
-# Clean file input and return a list of program instructions
-def prep_day_2(path):
-    with open(path) as f:
-        instructions = f.readlines()
-    instructions = str.split(instructions[0], ",")
-    instructions = list(map(int, instructions))
-    return instructions
-
+from helpers import prep_intcode_program
 
 def compute(program, noun, verb):
     program[1] = noun
@@ -37,7 +30,6 @@ def part_two():
                 return 100 * i + j
 
 
-program = prep_day_2("input/day2.txt")
+program = prep_intcode_program("input/day2.txt")
 print("part 1: " + str(compute(program.copy(), 12, 2)))
 print("part 2: " + str(part_two()))
-
