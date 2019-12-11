@@ -20,7 +20,7 @@ def get_param_modes(value):
 # mode rules.
 def parse_args(program, opcode, pc, param_modes):
     args = [0, 0, 0]
-    
+
     # Opcodes w/ 1 arg
     if opcode == 3:
         args[0] = program[pc+1]
@@ -29,15 +29,13 @@ def parse_args(program, opcode, pc, param_modes):
             args[0] = program[program[pc+1]]
         else:
             args[0] = program[pc+1]
-    # Opcodes w/ 2 args
-    elif opcode in (5, 6):
+    # Opcodes w/ 2 or 3 args
+    elif opcode in (1, 2, 5, 6, 7, 8):
         args[0] = program[program[pc+1]] if param_modes[2] == 0 else program[pc+1]
         args[1] = program[program[pc+2]] if param_modes[1] == 0 else program[pc+2]
-    # Opcodes w/ 3 args
-    elif opcode in (1, 2, 7, 8):
-        args[0] = program[program[pc+1]] if param_modes[2] == 0 else program[pc+1]
-        args[1] = program[program[pc+2]] if param_modes[1] == 0 else program[pc+2]
-        args[2] = program[pc+3]
+        # Opcodes w/ 3 args
+        if opcode in (1, 2, 7, 8):
+            args[2] = program[pc+3]
     
     return args
 
