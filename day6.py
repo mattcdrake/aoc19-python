@@ -52,8 +52,27 @@ def sortOrbits(orbits):
     return
 
 
+def countOrbits(orbits, planet, index):
+    if index == 0:
+        return 1
+    # Find index of next time planet appears
+    while orbits[index].orbiter != planet:
+        index -= 1
+    return countOrbits(orbits, orbits[index].orbitee, index) + 1
+
+
+def countTotalOrbits(orbits):
+    if len(orbits) <= 1:
+        return 1
+    numOrbits = 0
+    index = len(orbits) - 1
+    for orbit in reversed(orbits):
+        numOrbits += countOrbits(orbits, orbit.orbitee, index)
+        index -= 1
+    return numOrbits
+
+
 orbits = prep_input("./input/day6.txt")
 sortOrbits(orbits)
 
-for i in range(0, len(orbits)):
-    print(orbits[i].orbitee + " ) " + orbits[i].orbiter)
+print("part 1: " + str(countTotalOrbits(orbits)))
