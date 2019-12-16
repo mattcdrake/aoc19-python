@@ -49,30 +49,72 @@ def sortOrbits(orbits):
         target = orbits[trail].orbiter
         trail += 1
         lead = inner
-    return
 
 
-def countOrbits(orbits, planet, index):
-    if index == 0:
-        return 1
-    # Find index of next time planet appears
-    while orbits[index].orbiter != planet:
-        index -= 1
-    return countOrbits(orbits, orbits[index].orbitee, index) + 1
+def searchChildNodes(target, node):
+    if node.id == target:
+        return node
+    if not node.children:
+        return None
+    for child in node.children:
+        found = searchChildNodes(target, child)
+        if found:
+            return found
 
 
-def countTotalOrbits(orbits):
-    if len(orbits) <= 1:
-        return 1
-    numOrbits = 0
-    index = len(orbits) - 1
-    for orbit in reversed(orbits):
-        numOrbits += countOrbits(orbits, orbit.orbitee, index)
-        index -= 1
-    return numOrbits
+def countNodeDepth(target, node):
+    if node.id == target:
+        return 0
+    # This is so inefficient.
+    for child in node.children:
+        if searchChildNodes(target, child):
+            return countNodeDepth(target, child) + 1
+
+
+def countOrbits(head, depth):
+    if not head.children:
+        return depth
+    subtotal = depth
+    for child in head.children:
+        subtotal += countOrbits(child, depth + 1)
+    return subtotal
+
+
+def buildOrbitTree(orbits):
+    # Prime loop with inital COM node
+    cur = OrbitNode("COM", None, None)
+    head = cur
+    for orbit in orbits:
+        # This will bubble the pointer back up to the node's common ancestor
+        while cur and cur.id != orbit.orbitee:
+            # Search new cur's children
+            curtemp = searchChildNodes(orbit.orbitee, cur.parent)
+            if curtemp:
+                cur = curtemp
+            else:
+                cur = cur.parent
+        lead = OrbitNode(orbit.orbiter, cur, None)
+        cur.children.append(lead)
+        cur = lead
+    return head
+
+
+def findDistance(src, dest):
+    distance = 0
+    cur = src.parent
+    while cur.id != dest.parent:
+        curtemp = searchChildNodes(dest.id, cur)
+        if curtemp:
+            return distance + countNodeDepth(dest.id, cur) - 1
+        cur = cur.parent
+        distance += 1
 
 
 orbits = prep_input("./input/day6.txt")
 sortOrbits(orbits)
+head = buildOrbitTree(orbits)
+santa = searchChildNodes("SAN", head)
+you = searchChildNodes("YOU", head)
 
-print("part 1: " + str(countTotalOrbits(orbits)))
+print("part 1: " + str(countOrbits(head, 0)))
+print("part 2: " + str(findDistance(santa, you)))
