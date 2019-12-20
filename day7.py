@@ -1,6 +1,7 @@
 from helpers import prep_intcode_program
 from itertools import permutations
 
+
 def get_opcode(value):
     return value % 100
 
@@ -37,13 +38,12 @@ def parse_args(program, opcode, pc, param_modes):
         # Opcodes w/ 3 args
         if opcode in (1, 2, 7, 8):
             args[2] = program[pc+3]
-    
+
     return args
 
 
-def compute(program, inputs):
+def compute(program, inputs, pc):
     cur_input = 0
-    pc = 0
     opcode_raw = program[pc]
     opcode = get_opcode(opcode_raw)
     param_modes = get_param_modes(opcode_raw)
@@ -57,13 +57,15 @@ def compute(program, inputs):
         elif opcode == 2:
             program[args[2]] = args[0] * args[1]
             pc += 4
+        # Input instruction
         elif opcode == 3:
             program[args[0]] = inputs[cur_input]
             cur_input += 1
             pc += 2
+        # Output instruction
         elif opcode == 4:
-            return(args[0])
             pc += 2
+            return(args[0], "output", pc)
         elif opcode == 5:
             if args[0] != 0:
                 pc = args[1]
@@ -92,7 +94,7 @@ def compute(program, inputs):
         opcode = get_opcode(opcode_raw)
         param_modes = get_param_modes(opcode_raw)
 
-    return program[0]
+    return (program[0], "halt", pc)
 
 
 phase_settings = list(permutations([0, 1, 2, 3, 4], 5))
@@ -101,9 +103,49 @@ max_thrust = -1
 for amp_config in phase_settings:
     line_in = 0
     for amp in amp_config:
+        pc = 0
         program = prep_intcode_program("./input/day7.txt")
-        line_in = compute(program, [amp, line_in])
+        line_in, halt_type, pc = compute(program, [amp, line_in], pc)
+        line_in = line_in
     if line_in > max_thrust:
         max_thrust = line_in
-    
-print(max_thrust)
+
+print("part 1: " + str(max_thrust))
+
+phase_settings = list(permutations([5, 6, 7, 8, 9], 5))
+max_thrust = -1
+
+for amp_config in phase_settings:
+    first_run = True
+    found = False
+    programs = [prep_intcode_program("./input/day7.txt")
+                for i in range(0, 5)]
+    pcs = [0, 0, 0, 0, 0]
+    amp_id = 0
+    last_e_signal = -1
+    line_in = 0
+
+    while not found or amp_id != 0:
+        if first_run:
+            line_in = [amp_config[amp_id], line_in]
+        else:
+            line_in = [line_in]
+
+        line_in, halt_type, pcs[amp_id] = compute(
+            programs[amp_id], line_in, pcs[amp_id])
+
+        if halt_type == "output" and amp_id == 4:
+            last_e_signal = line_in
+
+        if halt_type == "halt":
+            found = True
+
+        if amp_id == 4:
+            first_run = False
+
+        amp_id = (amp_id + 1) % 5
+
+    if last_e_signal > max_thrust:
+        max_thrust = last_e_signal
+
+print("part 2: " + str(max_thrust))
