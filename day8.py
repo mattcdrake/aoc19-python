@@ -29,9 +29,38 @@ def find_fewest_zeroes(layers):
     return fewest_layer
 
 
+def find_pixel(layers, row, col):
+    for layer in layers:
+        pixel = layer[row][col]
+        if pixel != "2":
+            return pixel
+    return 2
+
+
+def split_rows(layers):
+    out_layers = []
+    for index, layer in enumerate(layers):
+        out_layers.append([])
+        for i in range(0, 150, 25):
+            out_layers[index].append(layer[i:i+25])
+    return out_layers
+
+
 layers = prep_input("input/day8.txt")
 fewest_zeroes_layer = find_fewest_zeroes(layers)
 ones = count_char(layers[fewest_zeroes_layer], "1")
 twos = count_char(layers[fewest_zeroes_layer], "2")
 
 print("part 1: " + str(ones * twos))
+
+layers = split_rows(layers)
+pixels = []
+for i in range(0, 6):
+    pixels.append([])
+    for j in range(0, 25):
+        pixels[i].append(find_pixel(layers, i, j))
+
+for row in pixels:
+    for col in row:
+        print(col, end="")
+    print()
