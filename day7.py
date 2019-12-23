@@ -1,4 +1,4 @@
-import intcode
+from intcode import IntcodeComputer
 from helpers import prep_intcode_program
 from itertools import permutations
 
@@ -9,9 +9,9 @@ max_thrust = -1
 for amp_config in phase_settings:
     line_in = 0
     for amp in amp_config:
-        pc = 0
         program = prep_intcode_program("./input/day7.txt")
-        line_in, halt_type, pc = intcode.compute(program, [amp, line_in], pc)
+        computer = IntcodeComputer(program.copy())
+        line_in, halt_type = computer.compute([amp, line_in])
         line_in = line_in
     if line_in > max_thrust:
         max_thrust = line_in
@@ -24,9 +24,8 @@ max_thrust = -1
 for amp_config in phase_settings:
     first_run = True
     found = False
-    programs = [prep_intcode_program("./input/day7.txt")
-                for i in range(0, 5)]
-    pcs = [0, 0, 0, 0, 0]
+    program = prep_intcode_program("./input/day7.txt")
+    amps = [IntcodeComputer(program.copy()) for i in range(0, 5)]
     amp_id = 0
     last_e_signal = -1
     line_in = 0
@@ -37,8 +36,7 @@ for amp_config in phase_settings:
         else:
             line_in = [line_in]
 
-        line_in, halt_type, pcs[amp_id] = intcode.compute(
-            programs[amp_id], line_in, pcs[amp_id])
+        line_in, halt_type = amps[amp_id].compute(line_in)
 
         if halt_type == "output" and amp_id == 4:
             last_e_signal = line_in
