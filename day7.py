@@ -5,11 +5,11 @@ from itertools import permutations
 
 phase_settings = list(permutations([0, 1, 2, 3, 4], 5))
 max_thrust = -1
+program = prep_intcode_program("./input/day7.txt")
 
 for amp_config in phase_settings:
     line_in = 0
     for amp in amp_config:
-        program = prep_intcode_program("./input/day7.txt")
         computer = IntcodeComputer(program.copy())
         line_in, halt_type = computer.compute([amp, line_in])
         line_in = line_in
@@ -24,7 +24,6 @@ max_thrust = -1
 for amp_config in phase_settings:
     first_run = True
     found = False
-    program = prep_intcode_program("./input/day7.txt")
     amps = [IntcodeComputer(program.copy()) for i in range(0, 5)]
     amp_id = 0
     last_e_signal = -1
