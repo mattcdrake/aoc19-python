@@ -106,7 +106,6 @@ for asteroid in asteroid_positions:
         angle = 360
     distance = sqrt(pow(opp, 2) + pow(adj, 2))
     distances.append([angle, distance, asteroid])
-
 distances.sort(reverse=True, key=sort_asteroids)
 
 deleted = []
