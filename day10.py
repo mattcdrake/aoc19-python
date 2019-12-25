@@ -1,5 +1,7 @@
 from pprint import pprint
 from fractions import Fraction as frac
+from math import atan2, degrees, sqrt
+from sys import maxsize
 
 
 def prep_input(path):
@@ -56,6 +58,19 @@ def is_observable(asteroids, candidate, destination):
     return True
 
 
+def sort_asteroids(value):
+    return value[0]
+
+
+def get_tiebreaker_index(distances, eligibles, deleted):
+    min_distance = maxsize
+    min_index = 0
+    for index, candidate in enumerate(eligibles):
+        if distances[candidate][1] < min_distance:
+            min_index = index
+    return eligibles[min_index]
+
+
 # Count total asteroids
 asteroids = prep_input("./input/day10.txt")
 asteroid_positions = log_asteroids(asteroids)
@@ -71,4 +86,47 @@ for candidate in asteroid_positions:
             observable += 1
     asteroid_obs[candidate] = observable
 
-print("part 1: " + str(max(asteroid_obs.values())))
+max_obs = max(asteroid_obs.values())
+print("part 1: " + str(max_obs))
+
+for k, v in asteroid_obs.items():
+    if v == max_obs:
+        laser = k
+
+distances = []
+for asteroid in asteroid_positions:
+    if laser == asteroid:
+        continue
+    # Backwards because the y-axis is flipped
+    opp = laser[1] - asteroid[1]
+    adj = asteroid[0] - laser[0]
+    angle = degrees(atan2(opp, adj)) % 360
+    angle = (angle - 90) % 360
+    if angle == 0:
+        angle = 360
+    distance = sqrt(pow(opp, 2) + pow(adj, 2))
+    distances.append([angle, distance, asteroid])
+
+distances.sort(reverse=True, key=sort_asteroids)
+
+deleted = []
+i = 0
+while i < len(distances):
+    eligibles = [i]
+    angle = distances[i][0]
+    i += 1
+    while i < len(distances) and distances[i][0] == angle:
+        eligibles.append(i)
+        i += 1
+    if len(eligibles) > 1:
+        deletion_index = get_tiebreaker_index(distances, eligibles, deleted)
+    else:
+        deletion_index = eligibles[0]
+    deleted.append(distances[deletion_index])
+    del distances[deletion_index]
+    i -= 1
+    if i >= (len(distances) - 1):
+        i = 0
+
+target = deleted[199][2]
+print("part 2: " + str(target[0] * 100 + target[1]))
