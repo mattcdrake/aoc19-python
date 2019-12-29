@@ -1,6 +1,10 @@
+from numpy import lcm
+
+
 class Body:
     # Position {'x': n, 'y': n, 'z': n}
     def __init__(self, position):
+        self.initial_pos = position.copy()
         self.position = position
         self.velocity = {'x': 0, 'y': 0, 'z': 0}
 
@@ -32,6 +36,15 @@ def update_velocities(body1, body2):
     body2.update_velocity({'x': x[1], 'y': y[1], 'z': z[1]})
 
 
+def advance_time(bodies):
+    for i in range(0, len(bodies)):
+        for j in range(i+1, len(bodies)):
+            update_velocities(bodies[i], bodies[j])
+
+    for body in bodies:
+        body.update_position()
+
+
 def parse_coordinate(string, coordinate):
     start = string.find(coordinate) + 2
     comma = string.find(",", start)
@@ -52,15 +65,6 @@ def parse_input(path):
             body = Body({'x': x, 'y': y, 'z': z})
             bodies.append(body)
     return bodies
-
-
-def advance_time(bodies):
-    for i in range(0, len(bodies)):
-        for j in range(i+1, len(bodies)):
-            update_velocities(bodies[i], bodies[j])
-
-    for body in bodies:
-        body.update_position()
 
 
 def find_potential_energy(body):
@@ -86,9 +90,39 @@ def find_energy(bodies):
     return total_energy
 
 
+def found_all_steps(steps):
+    for i in range(3):
+        if steps[i] < 0:
+            return False
+    return True
+
+
+def is_same_state(bodies, axis):
+    found = []
+    for i in range(4):
+        same_pos = bodies[i].position[axis] == bodies[i].initial_pos[axis]
+        same_vel = bodies[i].velocity[axis] == 0
+        found.append(same_pos and same_vel)
+    return all(found)
+
+
 bodies = parse_input("./input/day12.txt")
 
 for i in range(0, 1000):
     advance_time(bodies)
 
 print("part 1: " + str(find_energy(bodies)))
+
+bodies = parse_input("./input/day12.txt")
+axes = ['x', 'y', 'z']
+steps = [-1, -1, -1]
+step_ct = 0
+
+while not found_all_steps(steps):
+    advance_time(bodies)
+    step_ct += 1
+    for index, axis in enumerate(axes):
+        if steps[index] < 0 and is_same_state(bodies, axis):
+            steps[index] = step_ct
+
+print("part 2: " + str(lcm.reduce(steps)))
