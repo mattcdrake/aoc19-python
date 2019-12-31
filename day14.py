@@ -39,13 +39,19 @@ def build_graph(reactions, chemical, parent):
 
 
 def calculate_cost(costs, node):
-    while costs[node.reaction.product.name] > 0:
-        costs[node.reaction.product.name] -= node.reaction.product.count
-        for reagent in node.reaction.reagents:
-            if reagent.name in costs.keys():
-                costs[reagent.name] += reagent.count
-            else:
-                costs[reagent.name] = reagent.count
+    product_cost = costs[node.reaction.product.name]
+    product_yield = node.reaction.product.count
+    reaction_ct = product_cost // product_yield
+    if product_cost % product_yield > 0:
+        reaction_ct += 1
+    costs[node.reaction.product.name] -= product_yield * reaction_ct
+
+    for reagent in node.reaction.reagents:
+        try:
+            costs[reagent.name] += reagent.count * reaction_ct
+        except:
+            costs[reagent.name] = reagent.count * reaction_ct
+
     for child in node.children:
         calculate_cost(costs, child)
 
@@ -86,4 +92,21 @@ reactions = prep_input("./input/day14.txt")
 graph_root = build_graph(reactions, "FUEL", None)
 costs = {"FUEL": 1}
 calculate_cost(costs, graph_root)
-print("part 1: " + str(costs["ORE"]))
+min_ore = costs["ORE"]
+print("part 1: " + str(min_ore))
+
+low = 1
+high = 1000000000000
+found = False
+while not found:
+    mid = (low + high) // 2
+    costs = {"FUEL": (low + high) // 2}
+    calculate_cost(costs, graph_root)
+    ore_diff = 1000000000000 - costs["ORE"]
+    if ore_diff < min_ore and ore_diff > 0:
+        found = True
+    elif ore_diff > 0:
+        low = mid
+    else:
+        high = mid
+print("part 1 (test): " + str(mid))
