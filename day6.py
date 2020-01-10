@@ -81,7 +81,7 @@ def countOrbits(head, depth):
 
 
 def buildOrbitTree(orbits):
-    # Prime loop with inital COM node
+    # Prime loop with initial COM node
     cur = OrbitNode("COM", None, None)
     head = cur
     for orbit in orbits:

@@ -109,4 +109,4 @@ while not found:
         low = mid
     else:
         high = mid
-print("part 1 (test): " + str(mid))
+print("part 2: " + str(mid))
